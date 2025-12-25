@@ -1,5 +1,5 @@
 {
-  "name": "investor-platform",
+  "name": "investcrystal-platform",
   "private": true,
   "scripts": {
     "dev": "next dev",
