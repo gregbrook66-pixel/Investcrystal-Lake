@@ -1,19 +1,19 @@
+'use client'
+import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
-          
-export default async function Investors() {
-  const { data } = await supabase.from('investors').select('*')
+
+export default function Investors() {
+  const [investors, setInvestors] = useState([])
+
+  useEffect(() => {
+    supabase.from('investors').select('*').then(({ data }) => setInvestors(data))
+  }, [])
 
   return (
-    <main style={{ padding: 20 }}>
-      <h1>Community Investors</h1>
-      <ul>
-        {data.map((i, idx) => (
-          <li key={idx}>
-            {i.name} — {i.country} — {i.package}{' '}
-            {i.is_early_supporter ? '🌱 Early Supporter' : ''}
-          </li>
-        ))}
-      </ul>
+    <main>
+      {investors.map(i => (
+        <div key={i.id}>{i.name} — {i.package}</div>
+      ))}
     </main>
   )
 }
