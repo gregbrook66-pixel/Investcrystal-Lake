@@ -9,25 +9,43 @@ export default function Investors() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function loadInvestors() {
-      const { data, error } = await supabase
+    if (!supabase) return
+
+    async function load() {
+      const { data } = await supabase
         .from('investors')
         .select('*')
+        .order('created_at', { ascending: false })
 
-      if (!error) setInvestors(data || [])
+      setInvestors(data || [])
       setLoading(false)
     }
 
-    loadInvestors()
+    load()
   }, [])
 
+  if (!supabase) return <p>Configuration error</p>
   if (loading) return <p>Loading investors…</p>
 
   return (
-    <main>
+    <main style={{ padding: 20 }}>
+      <h1>Community Investors</h1>
+
+      <p>Total investors: {investors.length}</p>
+
       {investors.map(i => (
-        <div key={i.id}>
-          {i.name} — {i.package}
+        <div
+          key={i.id}
+          style={{
+            border: '1px solid #ccc',
+            marginBottom: 10,
+            padding: 10
+          }}
+        >
+          <strong>{i.name}</strong> — {i.country}
+          <br />
+          Package: {i.package}
+          {i.is_early_supporter && <span> 🌱 Early</span>}
         </div>
       ))}
     </main>
