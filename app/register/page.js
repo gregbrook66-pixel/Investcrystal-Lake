@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+
 export default function Register() {
   const [name, setName] = useState('')
   const [country, setCountry] = useState('')
@@ -11,28 +12,28 @@ export default function Register() {
   const [message, setMessage] = useState('')
 
   useEffect(() => {
+    if (!supabase) return
+
     supabase
       .from('packages')
-      .select('name, amount, base_projected_value, early_bonus_percent')
-      .then(({ data }) => {
-        setPackages(data || [])
-      })
+      .select('*')
+      .then(({ data }) => setPackages(data || []))
   }, [])
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (!supabase) return
 
     if (!name || !country || !selectedPackage) {
       setMessage('Please fill all fields')
       return
     }
 
-    // Check if already 100 early supporters
     const { count } = await supabase
       .from('investors')
       .select('*', { count: 'exact', head: true })
 
-    const isEarlySupporter = count < 100
+    const isEarlySupporter = (count || 0) < 100
 
     const { error } = await supabase.from('investors').insert({
       name,
@@ -42,11 +43,11 @@ export default function Register() {
     })
 
     if (error) {
-      setMessage('Something went wrong. Try again.')
+      setMessage('Registration failed')
     } else {
       setMessage(
-        `You have successfully joined 🎉${
-          isEarlySupporter ? ' (Early Supporter Bonus!)' : ''
+        `Registered successfully ${
+          isEarlySupporter ? '🌱 Early Supporter!' : ''
         }`
       )
       setName('')
@@ -55,32 +56,44 @@ export default function Register() {
     }
   }
 
-  return (
-    <main style={{ padding: 20, maxWidth: 400 }}>
-      <h1>Join as an Early Supporter</h1>
+  if (!supabase) return <p>Configuration error</p>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
+  return (
+    <main style={{ padding: 20 }}>
+      <h1>Join Investcrystal</h1>
+
+      <form onSubmit={handleSubmit}>
         <input
           placeholder="Full name"
           value={name}
           onChange={e => setName(e.target.value)}
-          style={{ width: '100%', marginBottom: 10, padding: 8 }}
         />
 
         <input
           placeholder="Country"
           value={country}
           onChange={e => setCountry(e.target.value)}
-          style={{ width: '100%', marginBottom: 10, padding: 8 }}
         />
 
         <select
           value={selectedPackage}
           onChange={e => setSelectedPackage(e.target.value)}
-          style={{ width: '100%', marginBottom: 10, padding: 8 }}
         >
-          <option value="">Select a package</option>
-          {packages.map(p => {
+          <option value="">Select package</option>
+          {packages.map(p => (
+            <option key={p.id} value={p.name}>
+              {p.name} — ${p.amount}
+            </option>
+          ))}
+        </select>
+
+        <button type="submit">Register</button>
+      </form>
+
+      {message && <p>{message}</p>}
+    </main>
+  )
+}
             const projected =
               p.base_projected_value +
               (p.base_projected_value * p.early_bonus_percent) / 100
