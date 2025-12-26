@@ -1,3 +1,6 @@
+'use client'
+export const dynamic = 'force-dynamic'
+  
 <main style={{ padding: 20 }}>
   <h1>Investcrystal Platform</h1>
   <p>
